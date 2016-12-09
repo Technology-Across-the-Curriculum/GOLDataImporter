@@ -35,9 +35,23 @@ def fullData():
 
     # Gethering terms
     terms = os.listdir(ARGUMENTS['path'])
-    print terms
-    terms = removeFiles(terms)
-    print terms
+    terms = removeFiles(terms) # Only getting term directories
+
+    # term loop
+    for term in terms:
+        term_path = ARGUMENTS['path'] + '/' + term
+
+        # Selecting classes in the term
+        classes = os.listdir(term_path)
+        classes = removeFiles(classes) # Only getting class directories
+
+        # class loop
+        for classdir  in classes:
+            class_path = term_path + '/' + classdir
+            classFiles = removeFiles(os.listdir(class_path))
+
+
+
 
 
 
@@ -129,12 +143,14 @@ def removeFiles(list):
     newList = []
 
     for element in list:
-        print element
+        exist = False
         for ignoreFile in CONFIG['ignore']:
-            print "\t" + CONFIG['ignore'][ignoreFile]
             if CONFIG['ignore'][ignoreFile] in element:
-                print "\t\t added"
-                newList.append(element)
+                exist = True
+                break
+        if not exist:
+            newList.append(element)
+
     return newList
 
 
