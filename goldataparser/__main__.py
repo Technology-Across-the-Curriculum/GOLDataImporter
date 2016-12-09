@@ -8,11 +8,13 @@
 import os
 import sys
 import yaml
-from lib import TurningParser
 import pickle as pic
-from lib import RosterParser
+from lib import TurningParser
 
 
+# #
+#
+# #
 def main(argv):
 
     # validating program before execution
@@ -31,6 +33,10 @@ def main(argv):
 # # # # # # # # # # # # # # # # # # # # # #
 #           Options Functions
 # # # # # # # # # # # # # # # # # # # # # #
+
+# #
+# Recursive iterates through all terms and terms classes in the research data
+# #
 def fullData():
 
     # Gethering terms
@@ -49,6 +55,15 @@ def fullData():
         for classdir  in classes:
             class_path = term_path + '/' + classdir
             classFiles = removeFiles(os.listdir(class_path))
+
+
+            if 'sessions' in classFiles:
+                tp = TurningParser()
+                tp.setPath(class_path + '/sessions')
+                tp.parse() # returns the session and participant list.
+
+
+
 
 
 
@@ -88,7 +103,7 @@ def validateSetup():
             
 # #
 # Validates command augments
-#
+# #
 def validateCommands(argv):
     # Defining variables
     global ARGUMENTS
@@ -156,7 +171,7 @@ def removeFiles(list):
 
 # #
 # Display usage of the GOLDataImporter
-#
+# #
 def usage():
     print '''usage: ./goldataimporter <directory> [-f] [-s] [output]
         directory:  relative path to GOL data

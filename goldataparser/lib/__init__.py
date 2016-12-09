@@ -8,4 +8,3 @@
 from turningparser import TurningParser
 from dbconnector import DBConnector
 from rosterparser import RosterParser
-from sessionparser import SessionParser

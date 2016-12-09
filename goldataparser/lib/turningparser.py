@@ -274,6 +274,7 @@ class TurningParser:
             self.getSectionParticipantList(
                 participationlist,
                 session['participants'])
+        return sessions, participationlist
 
 pass
 
