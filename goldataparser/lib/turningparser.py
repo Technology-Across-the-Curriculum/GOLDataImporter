@@ -227,7 +227,8 @@ class TurningParser:
 
     # #
     # Parses out session files in a directory
-    def parseData(self):
+    def parse(self):
+
         # Getting session files
         session_files = os.listdir(self.path)
 
@@ -236,10 +237,9 @@ class TurningParser:
         # course['acronym'] = directoryInfo[3]
         # course['directory'] = directoryName
         # course['section'] = {}  # dictionary for section information
-        course['session'] = []  # array of section objects
+        sessions = []  # array of section objects
         # course['classlist'] = []  # array of students from Consent/Grade list
-        course[
-            'participationlist'] = []  # array of participants from session files
+        participationlist = []  # array of participants from session files
 
         # Session Parsing loop
         for file in session_files:
@@ -266,13 +266,13 @@ class TurningParser:
 
             self.closeFile()  # Close the current file
 
-            course['session'].append(
+            sessions.append(
                 session)  # Append session to section
 
         # build section participant list
-        for session in course['session']:
+        for session in sessions:
             self.getSectionParticipantList(
-                course['participationlist'],
+                participationlist,
                 session['participants'])
 
 pass
