@@ -16,7 +16,6 @@ from lib import TurningParser
 #
 # #
 def main(argv):
-
     # validating program before execution
     validateSetup()
     validateCommands(argv)
@@ -25,7 +24,6 @@ def main(argv):
     # Calling loop depending on flag
     if ARGUMENTS['flag'] == '-f':
         fullData()
-
 
     pass
 
@@ -38,10 +36,9 @@ def main(argv):
 # Recursive iterates through all terms and terms classes in the research data
 # #
 def fullData():
-
     # Gethering terms
     terms = os.listdir(ARGUMENTS['path'])
-    terms = removeFiles(terms) # Only getting term directories
+    terms = removeFiles(terms)  # Only getting term directories
 
     # term loop
     for term in terms:
@@ -49,26 +46,41 @@ def fullData():
 
         # Selecting classes in the term
         classes = os.listdir(term_path)
-        classes = removeFiles(classes) # Only getting class directories
+        classes = removeFiles(classes)  # Only getting class directories
 
-        # class loop
-        for classdir  in classes:
-            class_path = term_path + '/' + classdir
+        # course loop
+        for courseDir in classes:
+            class_path = term_path + '/' + courseDir
             classFiles = removeFiles(os.listdir(class_path))
 
+            # Creating Cousre object
+            course = createCourse(courseDir)
 
             if 'sessions' in classFiles:
                 tp = TurningParser()
                 tp.setPath(class_path + '/sessions')
-                tp.parse() # returns the session and participant list.
+
+                # Store course session and participation list
+                course['session'], course[
+                    'participationlist'] = tp.parse()
 
 
+def createCourse(directoryName):
+    # variables
+    directoryInfo = directoryName.split('_')  # directory name split
 
+    print("Current Directory: %s") % (directoryName)
 
+    # creating course object
+    course = {}
+    course['acronym'] = directoryInfo[3]
+    course['directory'] = directoryName
+    course['section'] = {}  # dictionary for section information
+    course['session'] = []  # array of section objects
+    course['classlist'] = []  # array of students from Consent/Grade list
+    course['participationlist'] = []  # array of participants from session files
 
-
-
-
+    return course
 
 
 # # # # # # # # # # # # # # # # # # # # # #
@@ -96,11 +108,12 @@ def validateSetup():
     # Check directory
     for dir in config['directory']:
         if os.path.exists(PROJECT_PATH + config['directory'][dir]) == 0:
-            os.makedirs( PROJECT_PATH + config['directory'][dir])
+            os.makedirs(PROJECT_PATH + config['directory'][dir])
 
     CONFIG = config
     pass
-            
+
+
 # #
 # Validates command augments
 # #
@@ -108,31 +121,31 @@ def validateCommands(argv):
     # Defining variables
     global ARGUMENTS
     arguments = {
-        'path' : None,
-        'flag' : None,
+        'path': None,
+        'flag': None,
         'output': 'default'
     }
-    
+
     # Check for too few argument
     if len(argv) < 2:
         print "ERROR: Incorrect arguments"
         usage()
         exit()
-    
+
     # Checking for to many arguments
     if len(argv) > 3:
         print "ERROR: Too many arguments"
         usage()
         exit()
-    
+
     # Check flags
-    if  argv[1] != '-s' and  argv[1] != '-f':
+    if argv[1] != '-s' and argv[1] != '-f':
         print "ERROR: incorrect flag"
         usage()
         exit()
     else:
         arguments['flag'] = argv[1]
-            
+
     # Check path
     if (os.path.exists(os.path.abspath(argv[0])) == 0):
         print "ERROR: parsing path not found"
@@ -140,9 +153,9 @@ def validateCommands(argv):
         exit()
     else:
         arguments['path'] = os.path.abspath(argv[0])
-        
+
     if len(argv) == 3:
-        if(os.path.exists(os.path.abspath(argv[2])) == 0):
+        if (os.path.exists(os.path.abspath(argv[2])) == 0):
             print "ERROR: output path not found using default"
             arguments['output'] = os.path.abspath(CONFIG['directory']['output'])
         else:
@@ -150,6 +163,7 @@ def validateCommands(argv):
 
     ARGUMENTS = arguments
     pass
+
 
 # #
 # Removes files from list
@@ -180,12 +194,10 @@ def usage():
                -s:  parsing a directory of research data'''
 
 
-
 # # # # # # # # # # # # # # # # # # # # # #
 #      Main call function for program
 # # # # # # # # # # # # # # # # # # # # # #
 if __name__ == '__main__':
-
     # Defining Global variables for program
     global SCRIPT_PATH
     global PROJECT_PATH
