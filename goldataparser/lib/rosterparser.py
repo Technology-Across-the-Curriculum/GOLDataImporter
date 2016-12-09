@@ -20,7 +20,8 @@ class RosterParser:
         self.match = []
         self.filename = None
         self.filepath = None
-        self.key = ['firstname', 'lastname', 'sid', 'email', 'consent', 'grade']
+        self.key = ['firstname', 'lastname', 'sid', 'email', 'consent', 'grade','score']
+
 
     # #
     # Opens a give workbook and index worksheets

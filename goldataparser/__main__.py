@@ -10,6 +10,7 @@ import sys
 import yaml
 import pickle as pic
 from lib import TurningParser
+from lib import RosterParser
 
 
 # #
@@ -56,6 +57,7 @@ def fullData():
             # Creating Cousre object
             course = createCourse(courseDir)
 
+            # Check if directory had session files
             if 'sessions' in classFiles:
                 tp = TurningParser()
                 tp.setPath(class_path + '/sessions')
@@ -63,8 +65,25 @@ def fullData():
                 # Store course session and participation list
                 course['session'], course[
                     'participationlist'] = tp.parse()
+            else:
+                print "ERROR: no session files found, Course ignored"
+                pass
+
+            # Check if a Grade/Concent file exist
+            if '.xlsx' in classFiles[0]:
+                rp = RosterParser()
+                rp.open(class_path + '/' + classFiles[0])
+                course['classlist'] = rp.parse()
+                rp.close()
+
+            matchStudents(course)
+
+            saveCourse(course)
 
 
+# #
+# Creates a course object that will hold all parsed information
+# #
 def createCourse(directoryName):
     # variables
     directoryInfo = directoryName.split('_')  # directory name split
@@ -81,6 +100,35 @@ def createCourse(directoryName):
     course['participationlist'] = []  # array of participants from session files
 
     return course
+
+
+def saveCourse(couseObj):
+    if ARGUMENTS['output'] != 'default':
+        pic.dump(couseObj, open(
+            os.path.abspath(ARGUMENTS['output'] + '/' + couseObj[
+                'directory'] + '.obj',
+                            "wb")))
+    else:
+        pic.dump(couseObj, open(
+            os.path.abspath(str(PROJECT_PATH + CONFIG['directory']['output'] + '/' + couseObj[
+                'directory'] + '.obj')),
+                            "wb"))
+
+
+
+
+# #
+# Creats matchs between course['classlist'] and course ['participationlist']
+# #
+def matchStudents(course):
+    for student_c in course['classlist']:
+        match = 0
+        for student_p in course['participationlist']:
+            if student_c['firstname'] == student_p['firstname'] and student_c[
+                'lastname'] == student_p['lastname']:
+                for key, value in student_p.iteritems():
+                    if not hasattr(student_c, key):
+                        student_c[key] = value
 
 
 # # # # # # # # # # # # # # # # # # # # # #

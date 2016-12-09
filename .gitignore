@@ -139,3 +139,5 @@ ENV/
 ###
 .idea/
 config.yml
+bin/
+log/
