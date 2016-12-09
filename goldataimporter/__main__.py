@@ -15,10 +15,13 @@ from lib import RosterParser
 
 
 
+
 def main(argv):
     validateSetup()
     validateCommands(argv)
     pass
+
+
 # # # # # # # # # # # # # # # # # # # # # #
 #           Helper Functions
 # # # # # # # # # # # # # # # # # # # # # #
@@ -90,13 +93,10 @@ def validateCommands(argv):
             arguments['output'] = os.path.abspath(CONFIG['directory']['output'])
         else:
             arguments['output'] = os.path.abspath(argv[2])
-        
-    
-    
-    print arguments
-    return
-        
 
+    ARGUMENTS = arguments
+    pass
+        
 
 # #
 # Display usage of the GOLDataImporter
@@ -109,10 +109,15 @@ def usage():
                -s:  parsing a directory of research data'''
 
 
+
+# # # # # # # # # # # # # # # # # # # # # #
+#      Main call function for program
+# # # # # # # # # # # # # # # # # # # # # #
 if __name__ == '__main__':
     global SCRIPT_PATH
     global PROJECT_PATH
     global CONFIG
+    global ARGUMENTS
     
     # setting globals
     SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
