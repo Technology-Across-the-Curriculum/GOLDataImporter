@@ -16,9 +16,6 @@ from lib import RosterParser
 
 
 def main(argv):
-
-    
-    
     validateSetup()
     validateCommands(argv)
     pass
@@ -50,7 +47,7 @@ def validateSetup():
     pass
             
 # #
-# Validates comands entered by user
+# Validates command augments
 #
 def validateCommands(argv):
     arguments = {
@@ -105,7 +102,7 @@ def validateCommands(argv):
 # Display usage of the GOLDataImporter
 #
 def usage():
-    print '''usage: goldataimporter.py <directory> [-f] [-s] [output]
+    print '''usage: ./goldataimporter <directory> [-f] [-s] [output]
         directory:  relative path to GOL data
            output:  relative path to directory where finished data will be saved
                -f:  parsing full research data
