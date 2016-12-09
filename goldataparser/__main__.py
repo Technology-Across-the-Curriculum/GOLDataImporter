@@ -26,12 +26,44 @@ def main(argv):
     if ARGUMENTS['flag'] == '-f':
         fullData()
 
+    if ARGUMENTS['flag'] == '-s':
+        signleData()
+
     pass
 
 
 # # # # # # # # # # # # # # # # # # # # # #
 #           Options Functions
 # # # # # # # # # # # # # # # # # # # # # #
+
+def signleData():
+    class_path = ARGUMENTS['path']
+    classFiles = removeFiles(os.listdir(class_path))
+    # Creating Cousre object
+    course = createCourse(os.path.basename(os.path.normpath(ARGUMENTS['path'])))
+
+    # Check if directory had session files
+    if 'sessions' in classFiles:
+        tp = TurningParser()
+        tp.setPath(class_path + '/sessions')
+
+        # Store course session and participation list
+        course['session'], course[
+            'participationlist'] = tp.parse()
+    else:
+        print "ERROR: no session files found, Course ignored"
+        pass
+
+    # Check if a Grade/Concent file exist
+    if '.xlsx' in classFiles[0]:
+        rp = RosterParser()
+        rp.open(class_path + '/' + classFiles[0])
+        course['classlist'] = rp.parse()
+        rp.close()
+
+    matchStudents(course)
+
+    saveCourse(course)
 
 # #
 # Recursive iterates through all terms and terms classes in the research data
