@@ -13,9 +13,6 @@ import pickle as pic
 from lib import RosterParser
 
 
-
-
-
 def main(argv):
 
     # validating program before execution
@@ -35,7 +32,14 @@ def main(argv):
 #           Options Functions
 # # # # # # # # # # # # # # # # # # # # # #
 def fullData():
-    print "You have selected full data"
+
+    # Gethering terms
+    terms = os.listdir(ARGUMENTS['path'])
+    print terms
+    terms = removeFiles(terms)
+    print terms
+
+
 
 
 # # # # # # # # # # # # # # # # # # # # # #
@@ -117,7 +121,22 @@ def validateCommands(argv):
 
     ARGUMENTS = arguments
     pass
-        
+
+# #
+# Removes files from list
+# #
+def removeFiles(list):
+    newList = []
+
+    for element in list:
+        print element
+        for ignoreFile in CONFIG['ignore']:
+            print "\t" + CONFIG['ignore'][ignoreFile]
+            if CONFIG['ignore'][ignoreFile] in element:
+                print "\t\t added"
+                newList.append(element)
+    return newList
+
 
 # #
 # Display usage of the GOLDataImporter
