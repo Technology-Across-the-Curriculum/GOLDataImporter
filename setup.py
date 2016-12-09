@@ -1,5 +1,5 @@
 # # # # #
-# Project: GOLDataImporter
+# Project: GOLDataParser
 # File:
 # Created by: Nathan Healea
 # Date: 12/8/16
@@ -8,7 +8,7 @@
 from distutils.core import setup
 
 setup(
-    name='GOLDataimporter',
+    name='GOLDataParser',
     version='1.0-',
     packages=['pyaml','pickle'],
     url='',
