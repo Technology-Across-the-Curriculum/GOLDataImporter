@@ -17,9 +17,25 @@ from lib import RosterParser
 
 
 def main(argv):
+
+    # validating program before execution
     validateSetup()
     validateCommands(argv)
+
+    print PROJECT_PATH
+    # Calling loop depending on flag
+    if ARGUMENTS['flag'] == '-f':
+        fullData()
+
+
     pass
+
+
+# # # # # # # # # # # # # # # # # # # # # #
+#           Options Functions
+# # # # # # # # # # # # # # # # # # # # # #
+def fullData():
+    print "You have selected full data"
 
 
 # # # # # # # # # # # # # # # # # # # # # #
@@ -29,6 +45,8 @@ def main(argv):
 # #
 # Validates that the correct setup information exist
 def validateSetup():
+    # Defining variables
+    global CONFIG
     config_file = '/config.yml'
     config = None
 
@@ -46,13 +64,16 @@ def validateSetup():
     for dir in config['directory']:
         if os.path.exists(PROJECT_PATH + config['directory'][dir]) == 0:
             os.makedirs( PROJECT_PATH + config['directory'][dir])
-    
+
+    CONFIG = config
     pass
             
 # #
 # Validates command augments
 #
 def validateCommands(argv):
+    # Defining variables
+    global ARGUMENTS
     arguments = {
         'path' : None,
         'flag' : None,
@@ -114,16 +135,19 @@ def usage():
 #      Main call function for program
 # # # # # # # # # # # # # # # # # # # # # #
 if __name__ == '__main__':
+
+    # Defining Global variables for program
     global SCRIPT_PATH
     global PROJECT_PATH
     global CONFIG
     global ARGUMENTS
-    
+
+    CONFIG = None
+    ARGUMENTS = None
+
     # setting globals
     SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
     PROJECT_PATH = os.path.abspath(os.curdir)
-    
-    print SCRIPT_PATH
-    print PROJECT_PATH
-    
+
+    # calling main loop
     main(sys.argv[1:])
