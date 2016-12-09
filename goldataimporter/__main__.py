@@ -15,22 +15,49 @@ from lib import RosterParser
 
 
 
-def main(excitable, *argv):
-    validate()
+def main(argv):
+
+    
+    
+    validateSetup()
+    validateCommands(argv)
     pass
 # # # # # # # # # # # # # # # # # # # # # #
 #           Helper Functions
 # # # # # # # # # # # # # # # # # # # # # #
 
 # #
+# Validates that the correct setup information exist
+def validateSetup():
+    config_file = '/config.yml'
+    config = None
+
+    # checking for config file
+    if (os.path.exists(os.path.abspath(PROJECT_PATH + config_file)) == 0):
+        print "ERROR: configfile not found"
+        print os.path.abspath(PROJECT_PATH + config_file)
+        exit()
+    else:
+        # Load in config file
+        with open(os.path.abspath(PROJECT_PATH + config_file), 'r') as ymlfile:
+            config = yaml.load(ymlfile)
+
+    # Check directory
+    for dir in config['directory']:
+        if os.path.exists(PROJECT_PATH + config['directory'][dir]) == 0:
+            os.makedirs( PROJECT_PATH + config['directory'][dir])
+    
+    pass
+            
+# #
 # Validates comands entered by user
 #
-def validate(argv):
-    command = {
+def validateCommands(argv):
+    arguments = {
         'path' : None,
-        'flag' : None
+        'flag' : None,
+        'output': 'default'
     }
-    print argv
     
     # Check for too few argument
     if len(argv) < 2:
@@ -45,23 +72,32 @@ def validate(argv):
         exit()
     
     # Check flags
-    if argv[1] == '-s':
-        command['flag'] = '-s'
-    elif argv[1] == 'f':
-        command['flag'] = '-f'
+    if  argv[1] != '-s' and  argv[1] != '-f':
+        print "ERROR: incorrect flag"
+        usage()
+        exit()
     else:
-        print "ERROR: incorrect flag \n"
-        print argv[0]
+        arguments['flag'] = argv[1]
+            
+    # Check path
+    if (os.path.exists(os.path.abspath(argv[0])) == 0):
+        print "ERROR: parsing path not found"
         usage()
         exit()
-
+    else:
+        arguments['path'] = os.path.abspath(argv[0])
         
-    # Checking path
-    if (os.path.exists(argv[0]) == 0):
-        print "ERROR: parsing path not found\n"
-        print argv[0]
-        usage()
-        exit()
+    if len(argv) == 3:
+        if(os.path.exists(os.path.abspath(argv[2])) == 0):
+            print "ERROR: output path not found using default"
+            arguments['output'] = os.path.abspath(CONFIG['directory']['output'])
+        else:
+            arguments['output'] = os.path.abspath(argv[2])
+        
+    
+    
+    print arguments
+    return
         
 
 
@@ -77,4 +113,15 @@ def usage():
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    global SCRIPT_PATH
+    global PROJECT_PATH
+    global CONFIG
+    
+    # setting globals
+    SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
+    PROJECT_PATH = os.path.abspath(os.curdir)
+    
+    print SCRIPT_PATH
+    print PROJECT_PATH
+    
+    main(sys.argv[1:])

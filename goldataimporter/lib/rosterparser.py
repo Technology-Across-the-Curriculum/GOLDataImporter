@@ -91,7 +91,9 @@ class RosterParser:
                 classlist.append(student)
         return classlist
 
-
+    # #
+    # Closes current workbook and removes all data from object
+    #
     def close(self):
         self.C = []  # Consent
         self.G = []  # Grades

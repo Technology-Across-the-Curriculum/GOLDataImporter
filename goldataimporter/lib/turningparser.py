@@ -164,8 +164,6 @@ class TurningParser:
             parseAnswerList.append(answerObj)
         return parseAnswerList
 
-
-
     # #
     # Parser participant list from session data
     # Filepath: string (absolute path to file)
@@ -226,6 +224,6 @@ class TurningParser:
             if (is_partispant == 0):
                 classlist.append(part_ses)
 
-
-
 pass
+
+
