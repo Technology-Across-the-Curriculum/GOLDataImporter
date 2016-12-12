@@ -9,7 +9,7 @@ import os
 import sys
 import yaml
 import pickle as pic
-from lib import dbconnector as DBConnector
+from lib import DBConnector
 
 
 # #
@@ -19,7 +19,7 @@ def main(argv):
     # validating program before execution
     validateSetup()
     validateCommands(argv)
-
+    importData()
 
     pass
 
@@ -28,12 +28,146 @@ def main(argv):
 #           Options Functions
 # # # # # # # # # # # # # # # # # # # # # #
 
+def importData():
+    dummy_student = {'firstname': 'Student', 'lastname': 'Test', 'sid': None,
+                     'email': None, 'consent': None, 'grade': None, 'score':None}
 
+    dbconnector = DBConnector(CONFIG['mysql'])
+    courses = os.listdir(ARGUMENTS['path'])
+
+    # Files being removed becase of bad data
+    courses.remove('GLFNAUD_201602_W16_CS101_001_30274.obj')
+    courses.remove('ALS4001_201602_W16_PSY201_002_38203.obj')
+
+    for course_name in courses:
+
+        pickleFile = open(ARGUMENTS['path'] + '/' + course_name,
+                          "r")  # Opening file containing object
+        course = pic.load(pickleFile)  # Load object from file
+        pickleFile.close()  # Close object file
+        print "Course: " + course['directory']
+        course['id'] = dbconnector.insertCourse(
+            course)  # Insert course information
+
+
+        classroom_id = dbconnector.insertClassroom(
+            course['section']['classroom'])  # Inserting classroom information
+
+        # Section: set and insert information
+        course['section']['classroom_id'] = classroom_id
+        course['section']['course_id'] = course['id']
+        course['section']['id'] = dbconnector.insertSection(course['section'])
+        print("|--> Section: information inserted")
+
+        # Student: sets and inserts information
+        for student in course['classlist']:
+            student['section_id'] = course['section']['id']
+            validateStudent(student)
+            student['id'] = dbconnector.insertStudent(student)
+        print("  |--> class_list: student inserted")
+
+        # creating a dummy student
+        dummy_student['section_id'] = course['section']['id']
+        dummy_student['id'] = dbconnector.insertStudent(dummy_student)
+        print("  |--> class_list: dummy student inserted")
+
+        # loop for each section found in a course
+        for session in course['session']:
+
+            # Session: set and insert information
+            session['section_id'] = course['section']['id']
+            session['id'] = dbconnector.insertSession(session)
+            print("    |--> Session: inserted")
+
+            # Match session participants with classlist students
+            for participant in session['participants']:
+                # if turn, the id from the classlist will be added to the participant
+                if (matchParticipant(course['classlist'],
+                                     participant, dummy_student)):
+                    participant['session_id'] = session['id']
+                    participant['id'] = dbconnector.insertParticipant(
+                        participant)
+            print("      |--> Participants: inserted")
+
+            for question in session['questions']:
+
+                # Question: set and insert information
+                question['session_id'] = session['id']
+                question['id'] = dbconnector.insertQuestion(question)
+                print("      |--> Question: inserted")
+
+                # Insert loop for answers found in current questions
+                for answer in question['answers']:
+                    answer['question_id'] = question['id']
+                    answer['id'] = dbconnector.insertAnswer(answer)
+                print("        |--> Answers: inserted")
+
+                # Insert loop for responses found in current questions
+                for response in question['responses']:
+                    # if ture, the current responce will have the id of the corresponding session participant
+                    if (matchParticipantResponse(session['participants'],
+                                                 response, dummy_student)):
+                        response['question_id'] = question['id']
+                        response['id'] = dbconnector.insertResponse(response)
+
+                print("        |--> Responses: inserted")
 
 
 # # # # # # # # # # # # # # # # # # # # # #
 #           Helper Functions
 # # # # # # # # # # # # # # # # # # # # # #
+
+# temp methods to create valid student data
+def validateStudent(student):
+    keys = ['firstname', 'lastname', 'email', 'sid','consent', 'grade']
+
+    for k in keys:
+        if haskey(student, k) != 1:
+            student[k] = 'null'
+
+
+# Checks if an object contains a certain
+def haskey(obj, key):
+    keys = obj.keys()
+    key_found = 0
+    for k in keys:
+        if k == key:
+            key_found = 1
+
+    return key_found
+
+
+# Matches a session participant to the corresponding classlist student
+# Return True if match is found, sets classlist_id for corresponding participant
+# Return False if no match is found
+def matchParticipant(student_list, participant,dummy):
+    for student in student_list:
+        if (student['firstname'] == participant['firstname'] and student[
+            'lastname'] == participant['lastname']):
+            participant['classlist_id'] = student['id']
+            return 1
+        elif ('email' in student) and not (student['email'] == None):
+            onid = student['email'].split('@')[0]
+            if onid == participant['lmsid']:
+                participant['classlist_id'] = student['id']
+                return 1
+            else:
+                participant['classlist_id'] = dummy['id']
+                return 1
+        else:
+            participant['classlist_id'] = dummy['id']
+
+# Matches a responds to the corresponding session participant
+# Return True if match is found, sets participant_id for corresponding responds
+# Return False if no match is found
+def matchParticipantResponse(participant_list, response, dummy):
+    for participant in participant_list:
+        if (participant['device_id'] == response['deviceid']):
+            response['participant_id'] = participant['id']
+
+            return 1
+    return 0
+
 
 # #
 # Validates that the correct setup information exist
@@ -97,21 +231,21 @@ def validateCommands(argv):
 
     # Check flags
     if len(argv) == 3:
-        if argv[1] != '-di':
+        if argv[2] != '-di':
             print "ERROR: incorrect flag"
             usage()
             exit()
         else:
-            arguments['deidentified'] = argv[1]
+            arguments['deidentified'] = argv[2]
 
     # Check path
     if (os.path.exists(os.path.abspath(argv[0])) == 0):
-        print "ERROR: parsing path not found"
+        print os.path.abspath(PROJECT_PATH + argv[0])
+        print "ERROR: data object path not found"
         usage()
         exit()
     else:
         arguments['path'] = os.path.abspath(argv[0])
-
 
     ARGUMENTS = arguments
     pass
