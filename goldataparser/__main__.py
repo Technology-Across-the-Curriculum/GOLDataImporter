@@ -89,13 +89,15 @@ def fullData():
 
     # term loop
     for term in terms:
+
+        # Setting path for the current term
         term_path = ARGUMENTS['path'] + '/' + term
 
         # Creating Objects
         tp = TurningParser()
         rp = RosterParser()
 
-        # Selecting classes in the term
+        # Getting classes in the term
         classes = os.listdir(term_path)
         classes = removeFiles(classes)  # Only getting class directories
 
@@ -104,8 +106,12 @@ def fullData():
             class_path = term_path + '/' + courseDir
             classFiles = removeFiles(os.listdir(class_path))
 
-            # Creating Cousre object
+            # Creating Course object
             course = createCourse(courseDir)
+
+            # parsing section information
+            course['section'] = tp.getSection(course['directory'])
+            print(" |-- Section: Parsing information")
 
             # Check if directory had session files
             if 'sessions' in classFiles:
