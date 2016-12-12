@@ -39,45 +39,61 @@ def main(argv):
 # # # # # # # # # # # # # # # # # # # # # #
 
 def signleData():
+    # Creating objects
+    tp = TurningParser()
+    rp = RosterParser()
+
+    # Setting variables
     class_path = ARGUMENTS['path']
     classFiles = removeFiles(os.listdir(class_path))
-    # Creating Cousre object
+
+    # Creating course object
     course = createCourse(os.path.basename(os.path.normpath(ARGUMENTS['path'])))
+
+    # parsing section information
+    course['section'] = tp.getSection(course['directory'])
+    print(" |-- Section: Parsing information")
 
     # Check if directory had session files
     if 'sessions' in classFiles:
-        tp = TurningParser()
         tp.setPath(class_path + '/sessions')
-
         # Store course session and participation list
         course['session'], course[
             'participationlist'] = tp.parse()
     else:
-        print "ERROR: no session files found, Course ignored"
-        pass
+        print "  |-- Session: ERROR no session files found"
 
     # Check if a Grade/Concent file exist
     if '.xlsx' in classFiles[0]:
-        rp = RosterParser()
         rp.open(class_path + '/' + classFiles[0])
         course['classlist'] = rp.parse()
         rp.close()
+        print "  |-- Courselist: Parsed"
 
+    # Matching Students
     matchStudents(course)
+    print "  |-- Match: Complete"
 
+    # Saving Course Informaion
     saveCourse(course)
+    print "  |-- Coure Saved: Complete"
+
 
 # #
 # Recursive iterates through all terms and terms classes in the research data
 # #
 def fullData():
-    # Gethering terms
+    # Gathering terms
     terms = os.listdir(ARGUMENTS['path'])
     terms = removeFiles(terms)  # Only getting term directories
 
     # term loop
     for term in terms:
         term_path = ARGUMENTS['path'] + '/' + term
+
+        # Creating Objects
+        tp = TurningParser()
+        rp = RosterParser()
 
         # Selecting classes in the term
         classes = os.listdir(term_path)
@@ -93,26 +109,28 @@ def fullData():
 
             # Check if directory had session files
             if 'sessions' in classFiles:
-                tp = TurningParser()
                 tp.setPath(class_path + '/sessions')
 
                 # Store course session and participation list
                 course['session'], course[
                     'participationlist'] = tp.parse()
             else:
-                print "ERROR: no session files found, Course ignored"
-                pass
+                print "  |-- Session: ERROR no session files found"
 
             # Check if a Grade/Concent file exist
             if '.xlsx' in classFiles[0]:
-                rp = RosterParser()
                 rp.open(class_path + '/' + classFiles[0])
                 course['classlist'] = rp.parse()
                 rp.close()
+                print "  |-- Courselist: Parsed"
 
+            # Matching Students
             matchStudents(course)
+            print "  |-- Match: Complete"
 
+            # Saving Course Informaion
             saveCourse(course)
+            print "  |-- Coure Saved: Complete"
 
 
 # #
@@ -136,6 +154,8 @@ def createCourse(directoryName):
     return course
 
 
+# #
+# Saves the course object once it all
 def saveCourse(couseObj):
     if ARGUMENTS['output'] != 'default':
         pic.dump(couseObj, open(
@@ -144,11 +164,10 @@ def saveCourse(couseObj):
                             "wb")))
     else:
         pic.dump(couseObj, open(
-            os.path.abspath(str(PROJECT_PATH + CONFIG['directory']['output'] + '/' + couseObj[
-                'directory'] + '.obj')),
-                            "wb"))
-
-
+            os.path.abspath(str(
+                PROJECT_PATH + CONFIG['directory']['output'] + '/' + couseObj[
+                    'directory'] + '.obj')),
+            "wb"))
 
 
 # #
