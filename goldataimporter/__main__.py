@@ -29,6 +29,9 @@ def main(argv):
 # # # # # # # # # # # # # # # # # # # # # #
 
 def importData():
+    
+    course_list = {}
+    classroom_list = {}
     dummy_student = {'firstname': 'Student', 'lastname': 'Test', 'sid': None,
                      'email': None, 'consent': None, 'grade': None, 'score':None}
 
@@ -46,12 +49,23 @@ def importData():
         course = pic.load(pickleFile)  # Load object from file
         pickleFile.close()  # Close object file
         print "Course: " + course['directory']
-        course['id'] = dbconnector.insertCourse(
+        
+        # Check to see if the cousre is already added to the database
+        if course['acronym'] in course_list.keys():
+            course['id'] = course_list[course['acronym']]
+        else:
+            course['id'] = dbconnector.insertCourse(
             course)  # Insert course information
-
-
-        classroom_id = dbconnector.insertClassroom(
+            course_list[course['acronym']] = course['id']
+        
+        classroom_id = None
+        # Check if clas room is already added to the database
+        if course['section']['classroom'] in classroom_list.keys():
+            classroom_id = classroom_list[course['section']['classroom']]
+        else:
+            classroom_id = dbconnector.insertClassroom(
             course['section']['classroom'])  # Inserting classroom information
+            classroom_list[course['section']['classroom']] = classroom_id
 
         # Section: set and insert information
         course['section']['classroom_id'] = classroom_id
