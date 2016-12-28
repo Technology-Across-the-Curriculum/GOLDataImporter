@@ -131,10 +131,11 @@ def fullData():
                 print "  |-- Courselist: Parsed"
 
             # Matching Students
-            matchStudents(course)
+            matches = matchStudents(course)
             print "  |-- Match: Complete"
+            print "    |-- Num Match:{0}".format(matches)
 
-            # Saving Course Informaion
+            # Saving Course Information
             saveCourse(course)
             print "  |-- Coure Saved: Complete"
 
@@ -180,14 +181,17 @@ def saveCourse(couseObj):
 # Creats matchs between course['classlist'] and course ['participationlist']
 # #
 def matchStudents(course):
+    matchFound= 0
     for student_c in course['classlist']:
-        match = 0
+
         for student_p in course['participationlist']:
             if student_c['firstname'] == student_p['firstname'] and student_c[
                 'lastname'] == student_p['lastname']:
+                matchFound += 1
                 for key, value in student_p.iteritems():
                     if not hasattr(student_c, key):
                         student_c[key] = value
+    return matchFound
 
 
 # # # # # # # # # # # # # # # # # # # # # #
