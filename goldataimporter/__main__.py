@@ -29,11 +29,11 @@ def main(argv):
 # # # # # # # # # # # # # # # # # # # # # #
 
 def importData():
-
     course_list = {}
     classroom_list = {}
     dummy_student = {'firstname': 'Student', 'lastname': 'Test', 'sid': None,
-                     'email': None, 'consent': None, 'grade': None, 'score':None}
+                     'email': None, 'consent': None, 'grade': None,
+                     'score': None}
 
     dbconnector = DBConnector(CONFIG['mysql'])
     courses = os.listdir(ARGUMENTS['path'])
@@ -55,7 +55,7 @@ def importData():
             course['id'] = course_list[course['acronym']]
         else:
             course['id'] = dbconnector.insertCourse(
-            course)  # Insert course information
+                course)  # Insert course information
             course_list[course['acronym']] = course['id']
 
         classroom_id = None
@@ -64,7 +64,8 @@ def importData():
             classroom_id = classroom_list[course['section']['classroom']]
         else:
             classroom_id = dbconnector.insertClassroom(
-            course['section']['classroom'])  # Inserting classroom information
+                course['section'][
+                    'classroom'])  # Inserting classroom information
             classroom_list[course['section']['classroom']] = classroom_id
 
         # Section: set and insert information
@@ -96,44 +97,42 @@ def importData():
             # Match session participants with classlist students
             for participant in session['participants']:
                 # if turn, the id from the classlist will be added to the participant
-                if (matchParticipant(course['classlist'],
-                                     participant, dummy_student)):
-                    participant['session_id'] = session['id']
-                    participant['id'] = dbconnector.insertParticipant(
-                        participant)
-            print("      |--> Participants: inserted")
+                matchParticipant(course['classlist'],
+                                 participant, dummy_student)
+                participant['session_id'] = session['id']
+                participant['id'] = dbconnector.insertParticipant(
+                    participant)
+        print("      |--> Participants: inserted")
 
-            for question in session['questions']:
+        for question in session['questions']:
 
-                # Question: set and insert information
-                question['session_id'] = session['id']
-                question['id'] = dbconnector.insertQuestion(question)
-                print("      |--> Question: inserted")
+            # Question: set and insert information
+            question['session_id'] = session['id']
+            question['id'] = dbconnector.insertQuestion(question)
+            print("      |--> Question: inserted")
 
-                # Insert loop for answers found in current questions
-                for answer in question['answers']:
-                    answer['question_id'] = question['id']
-                    answer['id'] = dbconnector.insertAnswer(answer)
-                print("        |--> Answers: inserted")
+            # Insert loop for answers found in current questions
+            for answer in question['answers']:
+                answer['question_id'] = question['id']
+                answer['id'] = dbconnector.insertAnswer(answer)
+            print("        |--> Answers: inserted")
 
-                # Insert loop for responses found in current questions
-                for response in question['responses']:
-                    # if ture, the current responce will have the id of the corresponding session participant
-                    if (matchParticipantResponse(session['participants'],
-                                                 response, dummy_student)):
-                        response['question_id'] = question['id']
-                        response['id'] = dbconnector.insertResponse(response)
+            # Insert loop for responses found in current questions
+            for response in question['responses']:
+                # if ture, the current responce will have the id of the corresponding session participant
+                if (matchParticipantResponse(session['participants'],
+                                             response, dummy_student)):
+                    response['question_id'] = question['id']
+                    response['id'] = dbconnector.insertResponse(response)
 
-                print("        |--> Responses: inserted")
-
-
-# # # # # # # # # # # # # # # # # # # # # #
+            print(
+            "        |--> Responses: inserted")  # # # # # # # # # # # # # # # # # # # # # #
 #           Helper Functions
 # # # # # # # # # # # # # # # # # # # # # #
 
 # temp methods to create valid student data
 def validateStudent(student):
-    keys = ['firstname', 'lastname', 'email', 'sid','consent', 'grade']
+    keys = ['firstname', 'lastname', 'email', 'sid', 'consent', 'grade']
 
     for k in keys:
         if haskey(student, k) != 1:
@@ -154,22 +153,44 @@ def haskey(obj, key):
 # Matches a session participant to the corresponding classlist student
 # Return True if match is found, sets classlist_id for corresponding participant
 # Return False if no match is found
-def matchParticipant(student_list, participant,dummy):
+def matchParticipant(student_list, participant, dummy):
+    match_flag = 0
     for student in student_list:
-        if (student['firstname'] == participant['firstname'] and student[
-            'lastname'] == participant['lastname']):
-            participant['classlist_id'] = student['id']
-            return 1
-        elif ('email' in student) and not (student['email'] == None):
-            onid = student['email'].split('@')[0]
-            if onid == participant['lmsid']:
+        if not haskey(student, 'matched'):
+            print "student: has not match"
+            if (student['firstname'] == participant['firstname'] and student[
+                'lastname'] == participant['lastname']):
+
+                print "participant: matched by first and last"
+
+                # set the participant classlist_id
                 participant['classlist_id'] = student['id']
-                return 1
-            else:
-                participant['classlist_id'] = dummy['id']
-                return 1
-        else:
-            participant['classlist_id'] = dummy['id']
+
+                # set flag
+                match_flag = 1
+
+                # mark studet as matched
+                student['matched'] = 1
+                break
+
+            elif ('email' in student) and not (student['email'] == None):
+                onid = student['email'].split('@')[0]
+                if onid == participant['lmsid']:
+                    print "participant: has onid and is match"
+                    # set the participant classlist_id
+                    participant['classlist_id'] = student['id']
+
+                    # set flag
+                    match_flag = 1
+
+                    # mark studet as matched
+                    student['matched'] = 1
+                    break
+
+    if not match_flag:
+        print "NO: match found set to dummy"
+        participant['classlist_id'] = dummy['id']
+
 
 # Matches a responds to the corresponding session participant
 # Return True if match is found, sets participant_id for corresponding responds
