@@ -85,9 +85,9 @@ def importData():
         dummy_student['section_id'] = course['section']['id']
         dummy_student['id'] = dbconnector.insertStudent(dummy_student)
         print("  |--> class_list: dummy student inserted")
-
+        
         # opening logging file
-        #FILE_PATH = PROJECT_PATH + '/log/' + course['directory'] + '.txt'
+        FILE_PATH = PROJECT_PATH + '/log/' + course['directory'] + '.txt'
         
         # loop for each section found in a course
         for session in course['session']:
@@ -101,7 +101,7 @@ def importData():
             for participant in session['participants']:
                 # if turn, the id from the classlist will be added to the participant
                 matchParticipant(course['classlist'],
-                                 participant, dummy_student, FILE_PATH)
+                                 participant, dummy_student)
                 participant['session_id'] = session['id']
                 participant['id'] = dbconnector.insertParticipant(
                     participant)
@@ -158,23 +158,34 @@ def haskey(obj, key):
 # Matches a session participant to the corresponding classlist student
 # Return True if match is found, sets classlist_id for corresponding participant
 # Return False if no match is found
-def matchParticipant(student_list, participant, dummy, file_path):
-    # FILE_OBJECT = open(file_path, 'a')
+def matchParticipant(student_list, participant, dummy):
     match_flag = 0
+    print '|--Participant:' + participant['firstname'] + ', ' + participant[
+        'lastname']
     for student in student_list:
-        # FILE_OBJECT.write(
-        #     "|--Participant:{0},{1}\n".format(participant['firstname'],
-        #                                       participant['lastname']))
-        if not haskey(student, 'matched'):
-            # print "student: has not match"
-            if (student['firstname'] == participant['firstname'] and student[
-                'lastname'] == participant['lastname']):
-                
-                # print "participant: matched by first and last"
-                # FILE_OBJECT.write("  |--First, Last: Mached\n")
-                # FILE_OBJECT.write(
-                #     "    |--{0},{1}\n".format(student['firstname'],
-                #                              student['lastname']))
+        
+        if (student['firstname'] == participant['firstname'] and student[
+            'lastname'] == participant['lastname']):
+            # print "participant: matched by first and last"
+            print "  |--First, Last: Mached"
+            print '    |--' + student['firstname'] + ', ' + student[
+                'lastname']
+            
+            # set the participant classlist_id
+            participant['classlist_id'] = student['id']
+            
+            # set flag
+            match_flag = 1
+            
+            break
+        
+        if ('email' in student) and not (student['email'] == None):
+            onid = student['email'].split('@')[0]
+            if onid == participant['lmsid']:
+                # print "participant: has onid and is match"
+                print "  |--ONID: Mached"
+                print '    |-- Participent:' + participant[
+                    'lmsid'] + ', Student:' + onid
                 
                 # set the participant classlist_id
                 participant['classlist_id'] = student['id']
@@ -182,35 +193,12 @@ def matchParticipant(student_list, participant, dummy, file_path):
                 # set flag
                 match_flag = 1
                 
-                # mark studet as matched
-                student['matched'] = 1
                 break
-            
-            elif ('email' in student) and not (student['email'] == None):
-                onid = student['email'].split('@')[0]
-                if onid == participant['lmsid']:
-                    # print "participant: has onid and is match"
-                    # FILE_OBJECT.write("  |--ONID: Mached\n")
-                    # FILE_OBJECT.write(
-                    #     "    |-- Participent:{0}, student{1}\n".format(
-                    #         participant['lmsid'],
-                    #         onid))
-                    
-                    # set the participant classlist_id
-                    participant['classlist_id'] = student['id']
-                    
-                    # set flag
-                    match_flag = 1
-                    
-                    # mark studet as matched
-                    student['matched'] = 1
-                    break
     
-    if not match_flag:
+    if  match_flag == 0:
         # print "NO: match found set to dummy"
-        # FILE_OBJECT.write("  |--Not Match: set to Dummy\n")
+        print "  |--Not Match: set to Dummy"
         participant['classlist_id'] = dummy['id']
-    # FILE_OBJECT.close()
 
 
 # Matches a responds to the corresponding session participant
