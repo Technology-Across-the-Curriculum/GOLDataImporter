@@ -31,7 +31,7 @@ def main(argv):
 def importData():
     course_list = {}
     classroom_list = {}
-    dummy_student = {'firstname': 'Student', 'lastname': 'Test', 'sid': None,
+    dummy_student = {'firstname': 'Darth', 'lastname': 'Vader', 'sid': None,
                      'email': None, 'consent': None, 'grade': None,
                      'score': None}
     
@@ -129,7 +129,7 @@ def importData():
                         response['id'] = dbconnector.insertResponse(response)
                 
                 print("        |--> Responses: inserted")
-
+ 
 
 # # # # # # # # # # # # # # # # # # # # # #
 #           Helper Functions
@@ -160,16 +160,16 @@ def haskey(obj, key):
 # Return False if no match is found
 def matchParticipant(student_list, participant, dummy):
     match_flag = 0
-    print '|--Participant:' + participant['firstname'] + ', ' + participant[
-        'lastname']
+    # print '|--Participant:' + participant['firstname'] + ', ' + participant[
+    #     'lastname']
     for student in student_list:
         
         if (student['firstname'] == participant['firstname'] and student[
             'lastname'] == participant['lastname']):
             # print "participant: matched by first and last"
-            print "  |--First, Last: Mached"
-            print '    |--' + student['firstname'] + ', ' + student[
-                'lastname']
+            # print "  |--First, Last: Mached"
+            # print '    |--' + student['firstname'] + ', ' + student[
+            #     'lastname']
             
             # set the participant classlist_id
             participant['classlist_id'] = student['id']
@@ -183,9 +183,9 @@ def matchParticipant(student_list, participant, dummy):
             onid = student['email'].split('@')[0]
             if onid == participant['lmsid']:
                 # print "participant: has onid and is match"
-                print "  |--ONID: Mached"
-                print '    |-- Participent:' + participant[
-                    'lmsid'] + ', Student:' + onid
+                # print "  |--ONID: Mached"
+                # print '    |-- Participent:' + participant[
+                #     'lmsid'] + ', Student:' + onid
                 
                 # set the participant classlist_id
                 participant['classlist_id'] = student['id']
@@ -197,7 +197,7 @@ def matchParticipant(student_list, participant, dummy):
     
     if  match_flag == 0:
         # print "NO: match found set to dummy"
-        print "  |--Not Match: set to Dummy"
+        # print "  |--Not Match: set to Dummy"
         participant['classlist_id'] = dummy['id']
 
 
@@ -280,7 +280,7 @@ def validateCommands(argv):
             usage()
             exit()
         else:
-            arguments['deidentified'] = argv[2]
+            arguments['deidentify'] = argv[2]
     
     # Check path
     if (os.path.exists(os.path.abspath(argv[0])) == 0):
@@ -317,10 +317,10 @@ def removeFiles(list):
 # Display usage of the GOLDataImporter
 # #
 def usage():
-    print '''usage: ./goldataimporter <directory> [-c] [-di]
+    print '''usage: ./goldataimporter <directory> [-c] [-s] [salt]
         directory:  relative path to GOL data parced object files
                -c:  only import concenters
-              -di:  de-identify on import'''
+               -s:  salt entry in import'''
 
 
 # # # # # # # # # # # # # # # # # # # # # #

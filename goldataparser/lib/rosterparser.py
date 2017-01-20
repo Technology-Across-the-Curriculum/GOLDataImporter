@@ -82,6 +82,19 @@ class RosterParser:
                     student[self.key[count]] = cell.value
                     count += 1
                 classlist.append(student)
+            
+        classlist = self.consentReplace(classlist)
+        return classlist
+    
+    # #
+    # Replaces bad consent data with zero
+    def consentReplace(self, classlist):
+        for student in classlist:
+            if 'consent' in student:
+                if student['consent'] != 1:
+                    student['consent'] = 0
+            else:
+                student['consent'] = 0
         return classlist
 
     # #
