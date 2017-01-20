@@ -191,6 +191,9 @@ def matchStudents(course):
                 for key, value in student_p.iteritems():
                     if not hasattr(student_c, key):
                         student_c[key] = value
+                if student_c['consent'] != 1:
+                    student_c['consent'] = 0
+        
     return matchFound
 
 

@@ -82,6 +82,7 @@ class DBConnector:
 
                                               })
 
+
         if (section_id == 0):
             print("ERROR: Section not inserted. \n")
             return 1
