@@ -193,9 +193,27 @@ def matchStudents(course):
                         student_c[key] = value
                 if student_c['consent'] != 1:
                     student_c['consent'] = 0
+            elif ('email' in student_c) and ('email' in student_p):
+                c_email = False
+                p_email = False
+
+
+                if student_c['email'] is not None:
+                    c_email = student_c['email'].split('@')
+                if student_p['email'] is not None:
+                    p_email = student_p['email'].split('@')
+
+                if c_email and p_email:
+                    if c_email[0] == p_email[0] :
+                        matchFound += 1
+                        for key, value in student_p.iteritems():
+                            if not hasattr(student_c, key):
+                                student_c[key] = value
+                        if student_c['consent'] != 1:
+                            student_c['consent'] = 0
+
         
     return matchFound
-
 
 # # # # # # # # # # # # # # # # # # # # # #
 #           Helper Functions

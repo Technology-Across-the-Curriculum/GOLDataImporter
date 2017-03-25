@@ -231,37 +231,41 @@ class TurningParser:
 
         # Getting session files
         session_files = os.listdir(self.path)
-
         # Defining Variables
         sessions = []  # array of section objects
         participationlist = []  # array of participants from session files
 
+
         # Session Parsing loop
         for file in session_files:
+
             # split filename and extension
             filename, fileExt = os.path.splitext(file)
 
-            # openfile
-            self.openFile(self.path + '/' + file)
-            print("  |-- Session: %s") % (filename)
+            if(filename != '.DS_Store'):
 
-            # Parsing and storing the current session
-            session = self.getSession()
-            print("    |-- Information: Parsed")
+                # openfile
+                self.openFile(self.path + '/' + file)
+                print("  |-- Session: %s") % (filename)
 
-            # Parsing and inserting questions
-            session['questions'] = self.getQuestion()
-            print("      |-- Questions: Parsed")
+                # Parsing and storing the current session
+                session = self.getSession()
+                print("    |-- Information: Parsed")
 
-            # Parsing and inserting participants for session
-            session[
-                'participants'] = self.getParticipant()  # Processing participant list
-            print("      |-- Participants: Parsed")
+                # Parsing and inserting questions
+                session['questions'] = self.getQuestion()
+                print("      |-- Questions: Parsed")
 
-            self.closeFile()  # Close the current file
+                # Parsing and inserting participants for session
+                session[
+                    'participants'] = self.getParticipant()  # Processing participant list
+                print("      |-- Participants: Parsed")
 
-            sessions.append(
-                session)  # Append session to section
+                self.closeFile()  # Close the current file
+
+                sessions.append(
+                    session)  # Append session to section
+            
 
         # build section participant list
         for session in sessions:
