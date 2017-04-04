@@ -110,21 +110,12 @@ class TurningParser:
                 }  # Defining Session object
 
                 for leaf in child:
-                    if (
-                                    leaf.tag != 'responses' and leaf.tag != 'responsehistory' and leaf.tag != 'metadata' and leaf.tag != 'answers'):
+                    if (leaf.tag != 'responses' and leaf.tag != 'responsehistory' and leaf.tag != 'metadata' and leaf.tag != 'answers'):
                         question[leaf.tag] = leaf.text
                     elif (leaf.tag == 'responses'):
                         question['responses'] = self.getResponses(leaf)
                     elif (leaf.tag == 'answers'):
                         question['answers'] = self.getAnswers(leaf)
-                        # for answer in leaf:
-                        #     answerObj = {
-                        #         'id': 0,
-                        #         'question_id': 0
-                        #     }
-                        #     for property in answer:
-                        #         answerObj[property.tag] = property.text
-                        # question['answers'].append(answerObj)
                 question_list.append(question)
         return question_list
 

@@ -184,36 +184,50 @@ def matchStudents(course):
     matchFound= 0
     for student_c in course['classlist']:
 
+         # Foreach student in the participantion list
         for student_p in course['participationlist']:
+
+            # chech if the participant first and last matches student first and last
             if student_c['firstname'] == student_p['firstname'] and student_c[
                 'lastname'] == student_p['lastname']:
                 matchFound += 1
-                for key, value in student_p.iteritems():
-                    if not hasattr(student_c, key):
-                        student_c[key] = value
-                if student_c['consent'] != 1:
-                    student_c['consent'] = 0
+                student_c = combine(student_c, student_p);
+ 
+
+            # Check if both student and participant have emails
             elif ('email' in student_c) and ('email' in student_p):
                 c_email = False
                 p_email = False
 
-
+                # Parse email befor the @
                 if student_c['email'] is not None:
                     c_email = student_c['email'].split('@')
                 if student_p['email'] is not None:
                     p_email = student_p['email'].split('@')
 
+                # Compare "onids"
                 if c_email and p_email:
                     if c_email[0] == p_email[0] :
                         matchFound += 1
-                        for key, value in student_p.iteritems():
-                            if not hasattr(student_c, key):
-                                student_c[key] = value
-                        if student_c['consent'] != 1:
-                            student_c['consent'] = 0
+                        student_c = combine(student_c, student_p);
+
+            # check if student sid matches participant lmsid
+            elif ('SID' in student_c) and ('lmsid' in student_p):
+                if (student_c['SID'] == student_p['lmsid']):
+                    matchFound += 1
+                    student_c = combine(student_c, student_p);
+
 
         
     return matchFound
+
+def combine(student_c, student_p):
+    for key, value in student_p.iteritems():
+        if not hasattr(student_c, key):
+            student_c[key] = value
+        if student_c['consent'] != 1:
+            student_c['consent'] = 0
+    return student_c
 
 # # # # # # # # # # # # # # # # # # # # # #
 #           Helper Functions
