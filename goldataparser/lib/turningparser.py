@@ -1,5 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
+import string
 
 
 class TurningParser:
@@ -191,12 +192,22 @@ class TurningParser:
                         elif (count == 1):
                             participant['device_alt_id'] = device.text
                             count += 1
+                elif (leaf.tag == 'firstname' or leaf.tag == 'lastname' ) and (leaf.text is not None):
+                        participant[leaf.tag] = self.scrub(leaf.text)
                 else:
                     participant[leaf.tag] = leaf.text
 
             if (participant != {}):
                 participantList.append(participant)
         return participantList
+
+    def scrub(self, text):
+        befor = text
+        for i in string.punctuation:
+            text.replace(i, '')
+
+        text.lower()
+        return text
 
     # #
     # Creates a list of participants from section session files

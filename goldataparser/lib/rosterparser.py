@@ -9,6 +9,7 @@
 import os
 import sys
 from openpyxl import load_workbook
+import string
 
 class RosterParser:
     def __init__(self):
@@ -62,6 +63,15 @@ class RosterParser:
 
         return status
 
+
+    def scrub(self, text):
+        befor = text
+        for i in string.punctuation:
+            text.replace(i, '')
+
+        text.lower()
+        return text
+
     # #
     # Parses out sheets of a file
     # Parameters
@@ -79,7 +89,13 @@ class RosterParser:
                 count = 0
                 student = {}
                 for cell in row:
-                    student[self.key[count]] = cell.value
+                    if(self.key[count] == 'firstname' or self.key[count] == 'lastname') :
+                        if(cell.value is not None):
+                            student[self.key[count]] = self.scrub(str(cell.value))
+                        else:
+                            student[self.key[count]] = cell.value
+                    else:
+                        student[self.key[count]] = cell.value
                     count += 1
                 classlist.append(student)
             
