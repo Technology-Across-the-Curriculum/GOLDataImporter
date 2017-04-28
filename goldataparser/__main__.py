@@ -29,7 +29,7 @@ def main(argv):
         fullData()
 
     if ARGUMENTS['flag'] == '-s':
-        signleData()
+        singleData()
 
     pass
 
@@ -38,7 +38,7 @@ def main(argv):
 #           Options Functions
 # # # # # # # # # # # # # # # # # # # # # #
 
-def signleData():
+def singleData():
     # Creating objects
     tp = TurningParser()
     rp = RosterParser()
@@ -71,8 +71,9 @@ def signleData():
         print "  |-- Courselist: Parsed"
 
     # Matching Students
-    matchStudents(course)
+    matches = matchStudents(course)
     print "  |-- Match: Complete"
+    print "    |-- Num Match:{0}".format(matches)
 
     # Saving Course Informaion
     saveCourse(course)
@@ -181,8 +182,11 @@ def saveCourse(couseObj):
 # Creats matchs between course['classlist'] and course ['participationlist']
 # #
 def matchStudents(course):
-    matchFound= 0
+    numMatchFound = 0
+
     for student_c in course['classlist']:
+        isMatched = False
+        temp_p = None
 
          # Foreach student in the participantion list
         for student_p in course['participationlist']:
@@ -190,12 +194,13 @@ def matchStudents(course):
             # chech if the participant first and last matches student first and last
             if student_c['firstname'] == student_p['firstname'] and student_c[
                 'lastname'] == student_p['lastname']:
-                matchFound += 1
-                student_c = combine(student_c, student_p);
+                numMatchFound += 1
+                isMatched = True
+                temp_p = student_p
+                break # break out of loop if match is found
  
-
             # Check if both student and participant have emails
-            elif ('email' in student_c) and ('email' in student_p):
+            if ('email' in student_c) and ('email' in student_p):
                 c_email = False
                 p_email = False
 
@@ -208,26 +213,28 @@ def matchStudents(course):
                 # Compare "onids"
                 if c_email and p_email:
                     if c_email[0] == p_email[0] :
-                        matchFound += 1
-                        student_c = combine(student_c, student_p);
+                        numMatchFound += 1
+                        isMatched = True
+                        temp_p = student_p
+                        break # break out of loop if match is found
 
             # check if student sid matches participant lmsid
-            elif ('SID' in student_c) and ('lmsid' in student_p):
+            if ('SID' in student_c) and ('lmsid' in student_p):
                 if (student_c['SID'] == student_p['lmsid']):
-                    matchFound += 1
-                    student_c = combine(student_c, student_p);
-
-
-        
-    return matchFound
-
-def combine(student_c, student_p):
-    for key, value in student_p.iteritems():
-        if not hasattr(student_c, key):
-            student_c[key] = value
-        if student_c['consent'] != 1:
-            student_c['consent'] = 0
-    return student_c
+                    numMatchFound += 1
+                    isMatched = True
+                    temp_p = student_p
+                    break # break out of loop if match is found
+                    
+        # Combine classlist student and participantlist student.
+        if isMatched:
+            for key, value in temp_p.iteritems():
+                if not hasattr(student_c, key):
+                    student_c[key] = value
+            if student_c['consent'] != 1:
+                student_c['consent'] = 0
+                
+    return numMatchFound
 
 # # # # # # # # # # # # # # # # # # # # # #
 #           Helper Functions
@@ -337,7 +344,7 @@ def usage():
         directory:  relative path to GOL data
            output:  relative path to directory where finished data will be saved
                -f:  parsing full research data
-               -s:  parsing a directory of research data'''
+               -s:  parsing a single directory of research data'''
 
 
 # # # # # # # # # # # # # # # # # # # # # #

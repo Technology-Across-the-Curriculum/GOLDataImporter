@@ -8,6 +8,7 @@ class TurningParser:
     key = ['classroom', 'term_code', 'alt_term_code', 'acronym', 'section', 'crn', 'data_type']
     tree = None
     root = None
+    punctuation = '''!()-[]{};:'"\,<>./?@#$%^&*_~ '''
 
     # #
     # Constructor the Turning Parser Class
@@ -201,13 +202,16 @@ class TurningParser:
                 participantList.append(participant)
         return participantList
 
+    # #
+    # Srubs punctation form strings
+    # text: a string that contains punctuation
     def scrub(self, text):
-        befor = text
-        for i in string.punctuation:
-            text.replace(i, '')
-
-        text.lower()
-        return text
+        newText = ""
+        for char in text:
+            if char not in self.punctuation:
+                newText = newText + char
+        newText = newText.lower()
+        return newText
 
     # #
     # Creates a list of participants from section session files
