@@ -9,8 +9,10 @@
 import os
 import sys
 from openpyxl import load_workbook
+import string
 
 class RosterParser:
+    punctuation = '''!()-[]{};:'"\,<>./?@#$%^&*_~ '''
     def __init__(self):
         self.C = []  # Consent
         self.G = []  # Grades
@@ -21,6 +23,7 @@ class RosterParser:
         self.filename = None
         self.filepath = None
         self.key = ['firstname', 'lastname', 'sid', 'email', 'consent', 'grade','score']
+
 
 
     # #
@@ -62,6 +65,18 @@ class RosterParser:
 
         return status
 
+
+    # #
+    # Srubs punctation form strings
+    # text: a string that contains punctuation
+    def scrub(self, text):
+        newText = ""
+        for char in text:
+            if char not in self.punctuation:
+                newText = newText + char
+        newText = newText.lower()
+        return newText
+
     # #
     # Parses out sheets of a file
     # Parameters
@@ -79,8 +94,15 @@ class RosterParser:
                 count = 0
                 student = {}
                 for cell in row:
-                    student[self.key[count]] = cell.value
+                    if(self.key[count] == 'firstname' or self.key[count] == 'lastname') :
+                        if(cell.value is not None):
+                            student[self.key[count]] = self.scrub(str(cell.value))
+                        else:
+                            student[self.key[count]] = cell.value
+                    else:
+                        student[self.key[count]] = cell.value
                     count += 1
+
                 classlist.append(student)
             
         classlist = self.consentReplace(classlist)

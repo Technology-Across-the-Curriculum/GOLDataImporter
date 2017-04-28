@@ -1,5 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
+import string
 
 
 class TurningParser:
@@ -7,6 +8,7 @@ class TurningParser:
     key = ['classroom', 'term_code', 'alt_term_code', 'acronym', 'section', 'crn', 'data_type']
     tree = None
     root = None
+    punctuation = '''!()-[]{};:'"\,<>./?@#$%^&*_~ '''
 
     # #
     # Constructor the Turning Parser Class
@@ -110,21 +112,12 @@ class TurningParser:
                 }  # Defining Session object
 
                 for leaf in child:
-                    if (
-                                    leaf.tag != 'responses' and leaf.tag != 'responsehistory' and leaf.tag != 'metadata' and leaf.tag != 'answers'):
+                    if (leaf.tag != 'responses' and leaf.tag != 'responsehistory' and leaf.tag != 'metadata' and leaf.tag != 'answers'):
                         question[leaf.tag] = leaf.text
                     elif (leaf.tag == 'responses'):
                         question['responses'] = self.getResponses(leaf)
                     elif (leaf.tag == 'answers'):
                         question['answers'] = self.getAnswers(leaf)
-                        # for answer in leaf:
-                        #     answerObj = {
-                        #         'id': 0,
-                        #         'question_id': 0
-                        #     }
-                        #     for property in answer:
-                        #         answerObj[property.tag] = property.text
-                        # question['answers'].append(answerObj)
                 question_list.append(question)
         return question_list
 
@@ -200,12 +193,25 @@ class TurningParser:
                         elif (count == 1):
                             participant['device_alt_id'] = device.text
                             count += 1
+                elif (leaf.tag == 'firstname' or leaf.tag == 'lastname' ) and (leaf.text is not None):
+                        participant[leaf.tag] = self.scrub(leaf.text)
                 else:
                     participant[leaf.tag] = leaf.text
 
             if (participant != {}):
                 participantList.append(participant)
         return participantList
+
+    # #
+    # Srubs punctation form strings
+    # text: a string that contains punctuation
+    def scrub(self, text):
+        newText = ""
+        for char in text:
+            if char not in self.punctuation:
+                newText = newText + char
+        newText = newText.lower()
+        return newText
 
     # #
     # Creates a list of participants from section session files
@@ -231,37 +237,41 @@ class TurningParser:
 
         # Getting session files
         session_files = os.listdir(self.path)
-
         # Defining Variables
         sessions = []  # array of section objects
         participationlist = []  # array of participants from session files
 
+
         # Session Parsing loop
         for file in session_files:
+
             # split filename and extension
             filename, fileExt = os.path.splitext(file)
 
-            # openfile
-            self.openFile(self.path + '/' + file)
-            print("  |-- Session: %s") % (filename)
+            if(filename != '.DS_Store'):
 
-            # Parsing and storing the current session
-            session = self.getSession()
-            print("    |-- Information: Parsed")
+                # openfile
+                self.openFile(self.path + '/' + file)
+                print("  |-- Session: %s") % (filename)
 
-            # Parsing and inserting questions
-            session['questions'] = self.getQuestion()
-            print("      |-- Questions: Parsed")
+                # Parsing and storing the current session
+                session = self.getSession()
+                print("    |-- Information: Parsed")
 
-            # Parsing and inserting participants for session
-            session[
-                'participants'] = self.getParticipant()  # Processing participant list
-            print("      |-- Participants: Parsed")
+                # Parsing and inserting questions
+                session['questions'] = self.getQuestion()
+                print("      |-- Questions: Parsed")
 
-            self.closeFile()  # Close the current file
+                # Parsing and inserting participants for session
+                session[
+                    'participants'] = self.getParticipant()  # Processing participant list
+                print("      |-- Participants: Parsed")
 
-            sessions.append(
-                session)  # Append session to section
+                self.closeFile()  # Close the current file
+
+                sessions.append(
+                    session)  # Append session to section
+            
 
         # build section participant list
         for session in sessions:

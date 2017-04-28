@@ -29,7 +29,7 @@ def main(argv):
         fullData()
 
     if ARGUMENTS['flag'] == '-s':
-        signleData()
+        singleData()
 
     pass
 
@@ -38,7 +38,7 @@ def main(argv):
 #           Options Functions
 # # # # # # # # # # # # # # # # # # # # # #
 
-def signleData():
+def singleData():
     # Creating objects
     tp = TurningParser()
     rp = RosterParser()
@@ -71,8 +71,9 @@ def signleData():
         print "  |-- Courselist: Parsed"
 
     # Matching Students
-    matchStudents(course)
+    matches = matchStudents(course)
     print "  |-- Match: Complete"
+    print "    |-- Num Match:{0}".format(matches)
 
     # Saving Course Informaion
     saveCourse(course)
@@ -181,21 +182,59 @@ def saveCourse(couseObj):
 # Creats matchs between course['classlist'] and course ['participationlist']
 # #
 def matchStudents(course):
-    matchFound= 0
-    for student_c in course['classlist']:
+    numMatchFound = 0
 
+    for student_c in course['classlist']:
+        isMatched = False
+        temp_p = None
+
+         # Foreach student in the participantion list
         for student_p in course['participationlist']:
+
+            # chech if the participant first and last matches student first and last
             if student_c['firstname'] == student_p['firstname'] and student_c[
                 'lastname'] == student_p['lastname']:
-                matchFound += 1
-                for key, value in student_p.iteritems():
-                    if not hasattr(student_c, key):
-                        student_c[key] = value
-                if student_c['consent'] != 1:
-                    student_c['consent'] = 0
-        
-    return matchFound
+                numMatchFound += 1
+                isMatched = True
+                temp_p = student_p
+                break # break out of loop if match is found
+ 
+            # Check if both student and participant have emails
+            if ('email' in student_c) and ('email' in student_p):
+                c_email = False
+                p_email = False
 
+                # Parse email befor the @
+                if student_c['email'] is not None:
+                    c_email = student_c['email'].split('@')
+                if student_p['email'] is not None:
+                    p_email = student_p['email'].split('@')
+
+                # Compare "onids"
+                if c_email and p_email:
+                    if c_email[0] == p_email[0] :
+                        numMatchFound += 1
+                        isMatched = True
+                        temp_p = student_p
+                        break # break out of loop if match is found
+
+            # check if student sid matches participant lmsid
+            if ('SID' in student_c) and ('lmsid' in student_p):
+                if (student_c['SID'] == student_p['lmsid']):
+                    numMatchFound += 1
+                    isMatched = True
+                    temp_p = student_p
+                    break # break out of loop if match is found
+                    
+        # Combine classlist student and participantlist student.
+        if isMatched:
+            for key, value in temp_p.iteritems():
+                if not hasattr(student_c, key):
+                    student_c[key] = value
+            if student_c['consent'] != 1:
+                student_c['consent'] = 0
+                
+    return numMatchFound
 
 # # # # # # # # # # # # # # # # # # # # # #
 #           Helper Functions
@@ -305,7 +344,7 @@ def usage():
         directory:  relative path to GOL data
            output:  relative path to directory where finished data will be saved
                -f:  parsing full research data
-               -s:  parsing a directory of research data'''
+               -s:  parsing a single directory of research data'''
 
 
 # # # # # # # # # # # # # # # # # # # # # #
