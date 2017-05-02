@@ -116,6 +116,7 @@ class TurningParser:
                         isSeatQuestion = False
                         if 'seat' in leaf.text or 'Seat' in leaf.text:
                             isSeatQuestion = True
+                        question[leaf.tag] = leaf.text
                         for qleaf in child:
                             if qleaf.tag == 'responses':
                                 question['responses'] = self.getResponses(qleaf, isSeatQuestion)
@@ -126,8 +127,11 @@ class TurningParser:
                     elif leaf.tag == 'metadata':
                         # do nothing
                         continue
-                    elif leaf.tag == 'answer':
+                    elif leaf.tag == 'answers':
                         question['answers'] = self.getAnswers(leaf)
+                    elif leaf.tag == 'responses':
+                        # do nothing
+                        continue
                     else:
                         question[leaf.tag] = leaf.text
                     # if (leaf.tag != 'responses' and leaf.tag != 'responsehistory' and leaf.tag != 'metadata' and leaf.tag != 'answers' ):
