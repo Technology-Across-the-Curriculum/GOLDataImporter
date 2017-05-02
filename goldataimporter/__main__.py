@@ -38,8 +38,8 @@ def importData():
     courses = os.listdir(ARGUMENTS['path'])
     
     # Files being removed becase of bad data
-    courses.remove('GLFNAUD_201602_W16_CS101_001_30274.obj')
-    courses.remove('ALS4001_201602_W16_PSY201_002_38203.obj')
+    #courses.remove('GLFNAUD_201602_W16_CS101_001_30274.obj')
+    #courses.remove('ALS4001_201602_W16_PSY201_002_38203.obj')
     
     for course_name in courses:
 
