@@ -147,7 +147,7 @@ class TurningParser:
     # #
     # Parses responses from question
     # response_list : xml that contains responses for parsing
-    def getResponses(self, response_list, printOutput):
+    def getResponses(self, response_list, isSeat):
         parseResponseList = []  # array of response parsed from a question
 
         # TODO: REMOVE, debugging
@@ -165,10 +165,10 @@ class TurningParser:
             for property in response:
 
                 #TODO: REMOVE, debugging
-                if(printOutput and property.tag == 'responsestring'):
+                if(isSeat and property.tag == 'responsestring'):
                     seatCount += 1
-
-                if (property.tag == 'responsestring'):
+                    responseObj['answer'] = self.scrub(property.text)
+                elif (property.tag == 'responsestring'):
                     responseObj['answer'] = property.text
 
                 else:
@@ -177,7 +177,7 @@ class TurningParser:
             parseResponseList.append(responseObj)
 
         # TODO: REMOVE, debugging
-        if printOutput:
+        if isSeat:
             print "        |-- Seat Responces: " + str(seatCount)
         return parseResponseList
 
@@ -320,6 +320,7 @@ class TurningParser:
 
         # Return session and participation list
         return sessions, participationlist
+
 
 
 
