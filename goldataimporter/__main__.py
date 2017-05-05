@@ -1,5 +1,5 @@
 # # # # #
-# Project: GOLDataParser
+# Project: GOLDataImporter
 # File:
 # Created by: Nathan Healea
 # Date: 12/8/16
@@ -13,7 +13,7 @@ from lib import DBConnector
 
 
 # #
-#
+#  main program function
 # #
 def main(argv):
     # validating program before execution
@@ -110,28 +110,41 @@ def importData():
             print("      |--> Participants: inserted")
 
             for question in session['questions']:
+                
+                #TODO: REMOVE Debugging
+                if 'seat' in question['questiontext'] or 'Seat' in question['questiontext']:
+                    print "      |--> SeatCount: " + str(len(question['responses']))
 
                 # Question: set and insert information
                 question['session_id'] = session['id']
                 question['id'] = dbconnector.insertQuestion(question)
-            print("      |--> Question: inserted")
+                print("      |--> Question: inserted")
             
-            # Insert loop for answers found in current questions
-            for answer in question['answers']:
-                answer['question_id'] = question['id']
-                answer['id'] = dbconnector.insertAnswer(answer)
-            print("        |--> Answers: inserted")
+                # Insert loop for answers found in current questions
+                for answer in question['answers']:
+                    answer['question_id'] = question['id']
+                    answer['id'] = dbconnector.insertAnswer(answer)
+                print("        |--> Answers: inserted")
+    
+                # Insert loop for responses found in current questions
+                for response in question['responses']:
+                    # if ture, the current responce will have the id of the corresponding session participant
+                    if (matchParticipantResponse(session['participants'],
+                        response, dummy_student)):
+                        response['question_id'] = question['id']
+                        response['id'] = dbconnector.insertResponse(response)
+                print("        |--> Responses: inserted")
 
-            # Insert loop for responses found in current questions
-            for response in question['responses']:
-                # if ture, the current responce will have the id of the corresponding session participant
-                if (matchParticipantResponse(session['participants'],
-                    response, dummy_student)):
-                    response['question_id'] = question['id']
-                    response['id'] = dbconnector.insertResponse(response)
+# # # # # # # # # # # # # # # # # # # # # #
+#           Debugger Functions
+# # # # # # # # # # # # # # # # # # # # # #
+def countSeats(responses):
+    seatCount = 0
+    for response in responses:
+        seatCount += 1
 
-            print("        |--> Responses: inserted")
-
+    print "      |--> SeatCount: " + str(seatCount)
+    
 
 # # # # # # # # # # # # # # # # # # # # # #
 #           Helper Functions
@@ -156,76 +169,9 @@ def haskey(obj, key):
 
             return key_found
 
-
-# Matches a session participant to the corresponding classlist student
-# Return True if match is found, sets classlist_id for corresponding participant
-# Return False if no match is found
-# def matchParticipant(student_list, participant, dummy):
-#     match_flag = 0
-#     # print '|--Participant:' + participant['firstname'] + ', ' + participant[
-#     #     'lastname']
-#     for student in student_list:
-
-#         if (student['firstname'] == participant['firstname'] and student[
-#             'lastname'] == participant['lastname']): 
-
-#             # set the participant classlist_id
-#             participant['classlist_id'] = student['id']
-
-#             # set flag
-#             match_flag = 1
-
-#             break
-
-#         if ('email' in student) and ('email' in participant):
-#             c_email = False
-#             p_email = False
-
-#             # Parse email befor the @
-#             if student['email'] is not None:
-#                 c_email = student['email'].split('@')
-#             if participant['email'] is not None:
-#                 p_email = participant['email'].split('@')
-
-#             # Compare "onids"
-#             if c_email and p_email:
-#                 if c_email[0] == p_email[0] :
-
-#                     # set the participant classlist_id
-#                     participant['classlist_id'] = student['id']
-
-#                     # set flag
-#                     match_flag = 1
-
-#                     break
-
-#         if ('SID' in student) and ('lmsid' in student_p):
-#             c_sid = False
-#             p_lmsid = False
-
-#             # Parse email befor the @
-#             if student['SID'] is not None:
-#                 c_sid = student['SID'];
-#             if participant['lmsid'] is not None:
-#                 p_lmsid = participant['lmsid']
-
-#             if c_sid and p_lmsid:
-#                 if c_sid == p_lmsid:
-
-#                     # set the participant classlist_id
-#                     participant['classlist_id'] = student['id']
-
-#                     # set flag
-#                     match_flag = 1
-#                     break
-
-#     if  match_flag == 0:
-#         # print "NO: match found set to dummy"
-#         # print "  |--Not Match: set to Dummy"
-#         participant['classlist_id'] = dummy['id']
-
+# Matches a classlist student to participant
 def matchParticipant(student_list, participant, dummy):
-    match = False;
+    match = False
     studentCount = 0
     studentListSize = len(student_list) -1
 
@@ -290,14 +236,13 @@ def matchParticipant(student_list, participant, dummy):
         participant['classlist_id'] = dummy['id']
 
 
-
-
-
-
+# Checks if object is a match
+# Must match greater then 18%
+#   equivalent to two ffields
 def isMatch(attrObject):
-    count = 0;
-    result = False;
-    size = len(attrObject);
+    count = 0
+    result = False
+    size = len(attrObject)
 
     for attr in attrObject:
         if attrObject[attr]:
@@ -309,18 +254,16 @@ def isMatch(attrObject):
         result = True
     return result
 
-
-
 # Matches a responds to the corresponding session participant
 # Return True if match is found, sets participant_id for corresponding responds
 # Return False if no match is found
 def matchParticipantResponse(participant_list, response, dummy):
+    result = False
     for participant in participant_list:
         if (participant['device_id'] == response['deviceid']):
             response['participant_id'] = participant['id']
-            
-            return 1
-            return 0
+            result = True
+    return result
 
 
 # #

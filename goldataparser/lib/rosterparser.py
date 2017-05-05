@@ -67,7 +67,7 @@ class RosterParser:
 
 
     # #
-    # Srubs punctation form strings
+    # Srubs punctuation form strings
     # text: a string that contains punctuation
     def scrub(self, text):
         newText = ""

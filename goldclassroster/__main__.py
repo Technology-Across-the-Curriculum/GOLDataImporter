@@ -22,7 +22,7 @@ def main(argv):
 
     print PROJECT_PATH
     # Calling loop depending on flag
-    if ARGUMENTS['flag'] == '-d':
+    if ARGUMENTS['flag'] == '-f':
         fullData()
 
     if ARGUMENTS['flag'] == '-s':
@@ -31,12 +31,70 @@ def main(argv):
     pass
 
 def singleData():
-	print "singleData"
-	pass
+    rval = RosterValidator()
+    rval.open(ARGUMENTS['path'])
+    rval.parse('C')
+    rval.parse('G')
+    rval.compair()
+    rval.record()
+    rval.close()
+    pass
 
 def fullData():
-	print "fullData"
-	pass
+    # processed files
+    filesMatched = 0
+    directoryCount = 0
+	# Gathering terms
+    terms = os.listdir(ARGUMENTS['path'])
+    terms = removeFiles(terms)  # Only getting term directories
+
+    # term loop
+    for term in terms:
+
+        # Setting path for the current term
+        term_path = ARGUMENTS['path'] + '/' + term
+
+
+        rval = RosterValidator()
+
+        # Getting classes in the term
+        classes = os.listdir(term_path)
+        classes = removeFiles(classes)  # Only getting class directories
+
+        # counting directories
+        directoryCount += len(classes)
+
+        # course loop
+        for courseDir in classes:
+            class_path = term_path + '/' + courseDir
+            classFiles = removeFiles(os.listdir(class_path))
+
+            for file in classFiles:
+                if 'session' not in file:
+
+                    rval.open(class_path + '/' + file)
+                    print "  |-- Opened: " + file
+
+                    print "    |-- Parsing C"
+                    rval.parse('C')
+                    
+                    print "    |-- Parsing G"
+                    rval.parse('G')
+
+                    print "    |-- Compairing GC"
+                    rval.compair()
+                    
+                    print "    |-- Recording Matches"
+                    rval.record()
+                    
+
+                    rval.close()
+                    print "  |-- Closed: " + file
+
+                    filesMatched += 1
+    print "  |-- Num Course Directories : " + str(directoryCount)
+    print "  |-- Num File Processed: " + str(filesMatched)
+    pass
 
 # # # # # # # # # # # # # # # # # # # # # #
 #           Helper Functions
@@ -94,7 +152,7 @@ def validateCommands(argv):
         exit()
 
     # Check flags
-    if argv[1] != '-d' and argv[1] != '-s':
+    if argv[1] != '-f' and argv[1] != '-s':
         print "ERROR: incorrect flag"
         usage()
         exit()
@@ -119,6 +177,21 @@ def validateCommands(argv):
     ARGUMENTS = arguments
     pass
 
+# #
+# Removes files from list
+def removeFiles(list):
+    newList = []
+
+    for element in list:
+        exist = False
+        for ignoreFile in CONFIG['ignore']:
+            if CONFIG['ignore'][ignoreFile] in element:
+                exist = True
+                break
+        if not exist:
+            newList.append(element)
+
+    return newList
 
 
 # #
@@ -127,8 +200,8 @@ def validateCommands(argv):
 def usage():
     print '''usage: ./goldclasslist <directory> [-d] [-s]
         directory:  relative path to GOL data
-               -d:  merges single GC.xml file
-               -s:  merges all GC.xml files in directory'''
+               -f:  merges all GC.xml file in directory
+               -s:  merges a single GC.xml file'''
 
 
 # # # # # # # # # # # # # # # # # # # # # #

@@ -112,20 +112,46 @@ class TurningParser:
                 }  # Defining Session object
 
                 for leaf in child:
-                    if (leaf.tag != 'responses' and leaf.tag != 'responsehistory' and leaf.tag != 'metadata' and leaf.tag != 'answers'):
+                    if leaf.tag == 'questiontext':
+                        isSeatQuestion = False
+                        if 'seat' in leaf.text or 'Seat' in leaf.text:
+                            isSeatQuestion = True
                         question[leaf.tag] = leaf.text
-                    elif (leaf.tag == 'responses'):
-                        question['responses'] = self.getResponses(leaf)
-                    elif (leaf.tag == 'answers'):
+                        for qleaf in child:
+                            if qleaf.tag == 'responses':
+                                question['responses'] = self.getResponses(qleaf, isSeatQuestion)
+                                break
+                    elif leaf.tag == 'responsehistory':
+                        # do nothing
+                        continue
+                    elif leaf.tag == 'metadata':
+                        # do nothing
+                        continue
+                    elif leaf.tag == 'answers':
                         question['answers'] = self.getAnswers(leaf)
+                    elif leaf.tag == 'responses':
+                        # do nothing
+                        continue
+                    else:
+                        question[leaf.tag] = leaf.text
+                    # if (leaf.tag != 'responses' and leaf.tag != 'responsehistory' and leaf.tag != 'metadata' and leaf.tag != 'answers' ):
+                    #     question[leaf.tag] = leaf.text
+                    # elif (leaf.tag == 'responses'):
+                    #     question['responses'] = self.getResponses(leaf)
+                    #
+                    # elif (leaf.tag == 'answers'):
+                    #     question['answers'] = self.getAnswers(leaf)
                 question_list.append(question)
         return question_list
 
     # #
     # Parses responses from question
     # response_list : xml that contains responses for parsing
-    def getResponses(self, response_list):
+    def getResponses(self, response_list, isSeat):
         parseResponseList = []  # array of response parsed from a question
+
+        # TODO: REMOVE, debugging
+        seatCount = 0
         for response in response_list:
             responseObj = {
                 'id': 0,
@@ -135,12 +161,24 @@ class TurningParser:
                 'elapsed': 0,
                 'answer': ''
             }  # Defining response object
+
             for property in response:
-                if (property.tag == 'responsestring'):
+
+                #TODO: REMOVE, debugging
+                if(isSeat and property.tag == 'responsestring'):
+                    seatCount += 1
+                    responseObj['answer'] = self.scrub(property.text)
+                elif (property.tag == 'responsestring'):
                     responseObj['answer'] = property.text
+
                 else:
                     responseObj[property.tag] = property.text
+
             parseResponseList.append(responseObj)
+
+        # TODO: REMOVE, debugging
+        if isSeat:
+            print "        |-- Seat Responces: " + str(seatCount)
         return parseResponseList
 
     # #
@@ -251,8 +289,9 @@ class TurningParser:
             if(filename != '.DS_Store'):
 
                 # openfile
-                self.openFile(self.path + '/' + file)
                 print("  |-- Session: %s") % (filename)
+                self.openFile(self.path + '/' + file)
+
 
                 # Parsing and storing the current session
                 session = self.getSession()
@@ -281,6 +320,7 @@ class TurningParser:
 
         # Return session and participation list
         return sessions, participationlist
+
 
 
 
